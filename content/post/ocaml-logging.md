@@ -8,7 +8,7 @@ tags: [OCaml, logging]
 ## Why?
 Effectively running systems in production requires application level support for providing better visibility into what's happening at runtime. Instrumenting applications to provide structured, context aware traces/events is becoming easier thanks to efforts like [OpenTelemetry](https://opentelemetry.io/docs/) [^1], which is a vendor neutral framework for instrumentation and trace collection. 
 
-Using auto-instrumentation, either via OpenTelemetry SDKs for the language of your choice, or an observability vendor specific library has a lot of benefits. These libraries typically come with out of the box support for instrumenting a wide set of libraries, and propagating useful events to a collection agent (Elastic, Honeycomb and more). Structured events also have the benefit of allowing addition of interesting details like unique ids, execution time, etc about an event in question. Unlike logs which is a discrete event, traces span over a time interval. They can be started at the beginning of an interesting event, and allow incrementally adding more context to it over the lifecycle of the trace.
+Using auto-instrumentation, either via OpenTelemetry SDKs for the language of your choice, or an observability vendor specific library has a lot of benefits. These libraries typically come with out-of-the-box support for instrumenting a wide set of libraries and propagating useful events to a collection agent (Elastic, Honeycomb, and more). Structured events also have the benefit of allowing the addition of interesting details like unique ids, execution time, etc about an event in question. Unlike logs which are discrete events, traces span over a time interval. They can be started at the beginning of an interesting event, and allow incrementally adding more context to it over the lifecycle of the trace.
 
 A future post will talk more about leveraging tracing, and the benefits of using that model over manually logging information within applications, but there is still quite a bit we can do to improve logging and make them more useful for use in production systems.
 
@@ -16,7 +16,7 @@ A future post will talk more about leveraging tracing, and the benefits of using
 
 ## Problems with the default Async logger
 
-[Async](https://opensource.janestreet.com/async/) comes with a [logging module](https://github.com/janestreet/async_unix/blob/ecf27931acaf003cf9a9aca2626d8ddfdacab193/src/log.mli) that is really easy to use, and provides a simple interface that allows logging at a specific level and attaching some tags alongwith a message payload.
+[Async](https://opensource.janestreet.com/async/) comes with a [logging module](https://github.com/janestreet/async_unix/blob/ecf27931acaf003cf9a9aca2626d8ddfdacab193/src/log.mli) that is easy to use and provides a simple interface that allows logging at a specific level and attaching some tags along with a message payload.
 
 ```ocaml
 open! Core
@@ -36,9 +36,9 @@ This produces output that looks similar to:
 
 While easy to use the default logger does have some limitations. The log output is easy to read for humans, but it requires post-processing to transform it into a format that's easier to parse. [^2] 
 
-Log correlation is another challenge. In synchronous blocking systems transactions are served sequentially and as a result its easy to spot that any log event occuring after a transaction starts and before a transaction ends is related to the specific transaction. However in libraries like [Async](https://opensource.janestreet.com/async/) threading is non-preemptive and a single system thread can execute any number of user-mode "threads" asynchronously. In such systems a transaction might not run to completion and instead yield control to the scheduler so a different transaction can run. This results in logs from concurrent transactions to be printed interleaved.
+Log correlation is another challenge. In synchronous blocking systems transactions are served sequentially and as a result, it's easy to spot that any log event occurring after a transaction starts and before a transaction ends is related to the specific transaction. However, in libraries like [Async](https://opensource.janestreet.com/async/) threading is non-preemptive and a single system thread can execute any number of user-mode "threads" asynchronously. In such systems, a transaction might not run to completion and instead yield control to the scheduler so a different transaction can run. This results in logs from concurrent transactions being printed interleaved.
 
-We can simulate multiple transactions that yield control by adding some randomized sleeps within each independant task.
+We can simulate multiple transactions that yield control by adding some randomized delays within each independent task.
 
 ```ocaml
 let interleaved () =
@@ -60,7 +60,7 @@ let interleaved () =
 ;;
 ```
 
-We might see a log output like this:
+We might see output like this:
 
 ```
 2022-09-02 13:45:41.775601-04:00 Debug Starting task: "C"
@@ -78,18 +78,18 @@ We might see a log output like this:
 2022-09-02 13:45:43.735907-04:00 Info Finished all tasks
 ```
 
-The default output has details from each run of the task, but its hard to tell whether the log lines about starting and finishing the stages belongs to transaction A, B or C.
+The default output has details from each run of the task, but it's hard to tell whether the log lines about starting and finishing the stages belong to transactions A, B, or C.
 
 
-[^2]: Async supports s-expressions as a log output, but outside of the OCaml ecosystem s-expressions aren't common and most centralized log management systems don't support s-expressions.
+[^2]: Async supports s-expressions as a log output, but outside of the OCaml ecosystem s-expressions aren't common, and most centralized log management systems don't support s-expressions.
 
 ## Better Logging configuration
 
-We've seen some limitations of the out-of-the-box configration of Async's logging module, but Async provides an API for controlling how log messages are rendered and it can work with user-provided logging output implementations. Lets use this ability to address the two problems we talked about by implementing a machine readable output format for log messages and a system for adding unique identifiers for transactions within log messages.
+We've seen some limitations of the out-of-the-box configuration of Async's logging module, but Async provides an API for controlling how log messages are rendered and it can work with user-provided logging output implementations. Let us use this ability to address the two problems we talked about by implementing a machine-readable output format for log messages and a system for adding unique identifiers for transactions within log messages.
 
 ### JSON formatted logs
 
-Using centralized logging system is a fairly typical in real world deployments, as it can help to efficiently sift through the logs originating within the many separate applications running within the system. [Elasticsearch](https://www.elastic.co/observability/log-monitoring) is one such system and the example we'll use in this post. Elasticsearch can ingest logs, and provides a scalable interface for monitoring logs. It is possible to post-process application logs by parsing, transforming, and enriching logs before they get indexed by Elasticsearch, but we will instead configure Async's logger to output JSON formatted logs. JSON objects are easy to parse, and will help avoid the need for potentially brittle regex based parsing to extract data from logs.
+Using a centralized logging system is typical in real-world deployments, as it can help to efficiently sift through the logs originating within the many separate applications running within the system. [Elasticsearch](https://www.elastic.co/observability/log-monitoring) is one such system and the example we'll use in this post. Elasticsearch can ingest logs and provides a scalable interface for monitoring logs. It is possible to post-process application logs by parsing, transforming, and enriching logs before they get indexed by Elasticsearch, but we will instead configure Async's logger to output JSON-formatted logs. JSON objects are easy to parse and will help avoid the need for potentially brittle regex-based parsing to extract data from logs.
 
 {{< code numbered="true" >}}
 module Output = struct
@@ -119,7 +119,7 @@ module Output = struct
 end
 {{< /code >}}
 
-1. [Async_unix.Writer.t](https://github.com/janestreet/async_unix/blob/ecf27931acaf003cf9a9aca2626d8ddfdacab193/src/writer.mli) that acts as the sink for all log messages generated by a Logger.
+1. [Async_unix.Writer.t](https://github.com/janestreet/async_unix/blob/ecf27931acaf003cf9a9aca2626d8ddfdacab193/src/writer.mli) acts as the sink for all log messages generated by a Logger.
 2. We use [jsonaf](https://github.com/janestreet/jsonaf) for generating json payloads.
 
 ```ocaml
@@ -144,7 +144,7 @@ let json_logs () =
 ;;
 ```
 
-We might see a log output like this:
+We might see output like this:
 
 ```
 {"@timestamp":"2022-09-02 18:13:21.329844Z","message":"Starting task: C","log.level":"Debug"}
@@ -164,13 +164,13 @@ We might see a log output like this:
 
 ### Unique identifiers for transactions
 
-We now have JSON formatted logs that are easy to parse, but we still have the problem caused by interleaved logs as we don't have an easy way to correlate logs with specific transactions. Proper distributed log-correlation is a bigger problem that deserves its own detailed post, but we can still implement techniques to implement a fairly usable context propagation for log messages. 
+We now have JSON formatted logs that are easy to parse, but we still have the problem caused by interleaved logs as we don't have an easy way to correlate logs with specific transactions. Robust distributed log correlation is a bigger problem that deserves its own detailed post, but we can still implement techniques to implement a fairly usable context propagation for log messages. 
 
-A naive approach would be to manually forward a unique id to each transaction and manually forward the identifier at each callsite for a logging function. This approach is brittle as it relies on users to remember to use the unique identifier when logging something, and this needs us to re-write all functions that perform logging to also accept an additional argument that represents a unique identifier.
+A naive approach would be to manually forward a unique id to each transaction and manually forward the identifier at each call site for a logging function. This approach is brittle as it relies on users to remember to use the unique identifier when logging something, and this needs us to re-write all functions that perform logging to also accept an additional argument that represents a unique identifier.
 
-A more robust approach would be if every function that needed to log something could lookup a unique identifier that's currently active in its context. Blocking applications that use pre-emptive threads can rely on thread-local-storage for this usecase and maintain a stack of context ids that can be used by the logging system to determine the current active context id and automatically attach it to a log event. This approach doesn't work for user-mode threaded systems as a single thread can switch between various tasks, or systems where a task could potentially jump across threads. Async provides a solution for such context progatation that works at task level, and its naturally called [ExecutionContext](https://github.com/janestreet/async_kernel/blob/a6bd9b2074b9af3b0c3498a7327ea542909ea211/src/execution_context.mli). Every Async task runs within an excecution context, and the context object offers users to append some metadata to its local storage.
+A more robust approach would be if every function that needed to log something could look up a unique identifier that's currently active in its context. Blocking applications that use pre-emptive threads can rely on thread-local-storage for this use case and maintain a stack of context ids that can be used by the logging system to determine the current active context id and automatically attach it to a log event. This approach doesn't work for user-mode threaded systems as a single thread can switch between various tasks or systems where a task could potentially jump across threads. Async provides a solution for such context propagation that works at the task level and is naturally called [ExecutionContext](https://github.com/janestreet/async_kernel/blob/a6bd9b2074b9af3b0c3498a7327ea542909ea211/src/execution_context.mli). Every Async task runs within an execution context, and the context object offers users to append some metadata to its local storage.
 
-The first task is to come up with a unique identifier that we'll use to tag log messages. We could use UUIDs, but a better option might be to use a random 16 byte identifier that's compliant with the W3C recommendation for propagating distributed tracing contexts across applications. One potential implementation of this random ID generation can be seen below:
+The first task is to come up with a unique identifier that we'll use to tag log messages. We could use UUIDs, but a better option might be to use a random 16-byte identifier that's compliant with the W3C recommendation for propagating distributed tracing contexts across applications. One potential implementation of this random ID generation can be seen below:
 
 ```ocaml
 open! Core
@@ -213,7 +213,7 @@ end = struct
 end
 ```
 
-With the ID generation out of the way, we can now look at automatic ID context propagation for async tasks. Instead of implementing a limited solution that just works for IDs we will implement a way to propagate generic log tags. This can be used to progate other metadata in addition to the ID that could be useful to append to every log message within a transaction.
+With the ID generation out of the way, we can now look at automatic ID context propagation for async tasks. Instead of implementing a limited solution that just works for IDs, we will implement a way to propagate generic log tags. This can be used to progate other metadata in addition to the ID that could be useful to append to every log message within a transaction.
 
 {{< code numbered="true" >}}
 module Logger : sig
@@ -276,11 +276,11 @@ end
 {{< /code >}}
 
 1. `Make_global` generates a new unique singleton logging module. It can be useful for libraries to generate a unique Logger instead of pushing content to the application's global logger (`Log.Global`)
-2. Unique identifier that associates log tags within an execution context's local storage.
-3. When merging the existing tags within an execution context's local storage with user provided tags, we always favor the user provided tag if there's a clash between its key and an existing key within the local storage.
-4. `with_tags` runs the user provided function within an execution context where the local storage contains tag list created after merging the user provided tags with the existing tags (if any) within the call site's current execution context.
-5. `log_transform` is called by Async's logging system and gives us the opportunity to transform a log message by automatically attaching log tags if some tags exist in the execution context's local storage. The transform merges the local storage's tags with any new tags provided directly at the call site of a log message.
-6. `with_transaction` generates a new random transaction ID, and runs the user provided function within an execution context with a trace id tag stored in its local storage.
+2. A unique identifier that associates log tags within an execution context's local storage.
+3. When merging the existing tags within an execution context's local storage with user-provided tags, we always favor the user-provided tag if there's a clash between its key and an existing key within the local storage.
+4. `with_tags` runs the user-provided function within an execution context where the local storage contains a tag list created after merging the user-provided tags with the existing tags (if any) within the call site's current execution context.
+5. `log_transform` is called by Async's logging system and allows us to transform a log message by automatically attaching log tags if some tags exist in the execution context's local storage. The transform merges the tags within the local storage with any new tags provided directly at the call site of a log message.
+6. `with_transaction` generates a new random transaction ID and runs the user-provided function within an execution context with a trace id tag stored in its local storage.
 
 Example showing the use of these new logging utilities:
 
@@ -309,7 +309,7 @@ let main () =
 ;;
 ```
 
-We might see a log output like this:
+We might see output like this:
 
 ```
 {"@timestamp":"2022-09-02 19:12:48.327648Z","message":"Starting tasks","log.level":"Debug","trace.id":"a8be55ee47252520baa1dcae035d8170"}
@@ -328,12 +328,12 @@ We might see a log output like this:
 {"@timestamp":"2022-09-02 19:12:50.717448Z","message":"Finished all tasks","log.level":"Info","trace.id":"a8be55ee47252520baa1dcae035d8170"}
 ```
 
-We added the identifier to the log message to make it easy to confirm that each unique transaction has a unique random trace id automatically attached to the log message. This shows that the actual function that performs the logging didn't need any modification. As long as we have access to Logger instance, we can use the `log_transform` implementation and get easy context propagation for log tags for free!!
+We added the identifier to the log message to make it easy to confirm that each unique transaction has a unique random trace id automatically attached to the log message. This shows that the actual function that performs the logging didn't need any modification. As long as we have access to the Logger instance, we can use the `log_transform` implementation and get easy context propagation for log tags for free!!
 
 ## Conclusion
 
-Voila! we now have a way to generate machine readable log messages and a lightweight method for automatic context progatation for independant async transactions.
+Voila! we now have a way to generate machine-readable log messages and a lightweight method for automatic context propagation for independent async transactions.
 
-This is all I have for now! If you like this post, or have feedback do let me know, either via [email](mailto:github@sonianurag.com) or on [github](https://github.com/anuragsoni/anuragsoni.github.io/discussions).
+This is all I have for now! If you like this post or have feedback do let me know, either via [email](mailto:github@sonianurag.com) or on [github](https://github.com/anuragsoni/anuragsoni.github.io/discussions).
 
-All the code in this post can be found on [here](https://github.com/anuragsoni/anuragsoni.github.io/blob/77227dedd4cd8617938b01b054496b75ca6b92e4/code/bin/log_example.ml). If you notice any issues let me know via [github](https://github.com/anuragsoni/anuragsoni.github.io/issues).
+All the code in this post can be found [here](https://github.com/anuragsoni/anuragsoni.github.io/blob/77227dedd4cd8617938b01b054496b75ca6b92e4/code/bin/log_example.ml). If you notice any issues let me know via [github](https://github.com/anuragsoni/anuragsoni.github.io/issues).
