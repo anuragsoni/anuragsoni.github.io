@@ -15,13 +15,29 @@ imaging:
   quality: 99
 
 params:
+  author: "Anurag Soni"
   showThemeSwitcher: false
+  search: true
+  dateFormat: Jan 2, 2006
+  readingTime: true
+  defaultDarkTheme: false
+  customCss:
+    - css/fonts.css
 
 menu:
   nav:
     - name: Home
       url: /
       weight: 1
+    - name: Blog
+      url: /post/
+      weight: 2
+    - name: Tags
+      url: /tags/
+      weight: 3
+    - name: RSS
+      url: /index.xml
+      weight: 4
 
 markup:
   defaultMarkdownHandler: goldmark
