@@ -3,4 +3,4 @@
  (preprocess
   (pps ppx_jane))
  (inline_tests)
- (libraries core async yojson hex_encode))
+ (libraries core async jsonaf hex_encode))

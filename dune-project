@@ -11,5 +11,5 @@
    (>= 0.15.0))
   (async
    (>= 0.15.0))
-  yojson
+  jsonaf
   hex_encode))

@@ -52,53 +52,62 @@ let%expect_test "Can create unique identifiers" =
 
 open! Async
 
-let tag_key = Univ_map.Key.create ~name:"log_tags" [%sexp_of: (string * string) list]
+module Logger : sig
+  include Log.Global_intf
 
-let merge_tags left right =
-  [ left; right ]
-  |> List.concat
-  |> List.sort ~compare:(fun (key1, _) (key2, _) -> String.Caseless.compare key1 key2)
-  |> List.remove_consecutive_duplicates
-       ~which_to_keep:`Last
-       ~equal:(fun (key1, _) (key2, _) -> String.Caseless.equal key1 key2)
-;;
+  val with_transaction : (unit -> 'a Deferred.t) -> 'a Deferred.t
+  val log_transform : (Log.Message.t -> Log.Message.t) option
+end = struct
+  include Log.Make_global ()
 
-let with_tags tags f =
-  let existing_tags = Option.value ~default:[] (Scheduler.find_local tag_key) in
-  Scheduler.with_local
-    tag_key
-    (Some (merge_tags existing_tags tags))
-    ~f:(fun () -> Scheduler.within' (fun () -> f ()))
-;;
+  let tag_key = Univ_map.Key.create ~name:"log_tags" [%sexp_of: (string * string) list]
 
-let add_tags_if_present existing_tags =
-  match Scheduler.find_local tag_key with
-  | None -> existing_tags
-  | Some tags -> merge_tags tags existing_tags
-;;
+  let merge_tags left right =
+    [ left; right ]
+    |> List.concat
+    |> List.sort ~compare:(fun (key1, _) (key2, _) -> String.Caseless.compare key1 key2)
+    |> List.remove_consecutive_duplicates
+         ~which_to_keep:`Last
+         ~equal:(fun (key1, _) (key2, _) -> String.Caseless.equal key1 key2)
+  ;;
 
-let log_transform =
-  Some
-    (fun msg ->
-      let open Log.Message in
-      let level = level msg
-      and raw_message = raw_message msg
-      and tags = add_tags_if_present (tags msg)
-      and time = time msg in
-      create ?level ~tags ~time raw_message)
-;;
+  let with_tags tags f =
+    let existing_tags = Option.value ~default:[] (Scheduler.find_local tag_key) in
+    Scheduler.with_local
+      tag_key
+      (Some (merge_tags existing_tags tags))
+      ~f:(fun () -> Scheduler.within' (fun () -> f ()))
+  ;;
 
-module Logger = Log.Make_global ()
+  let add_tags_if_present existing_tags =
+    match Scheduler.find_local tag_key with
+    | None -> existing_tags
+    | Some tags -> merge_tags tags existing_tags
+  ;;
 
-let () =
-  Logger.set_transform log_transform;
-  Log.Global.set_transform log_transform
-;;
+  let log_transform =
+    Some
+      (fun msg ->
+        let open Log.Message in
+        let level = level msg
+        and raw_message = raw_message msg
+        and tags = add_tags_if_present (tags msg)
+        and time = time msg in
+        create ?level ~tags ~time raw_message)
+  ;;
 
-let within_trace ~f =
-  let id = Id.to_hex (Id.create ()) in
-  with_tags [ "trace.id", id ] (fun () -> f ())
-;;
+  let with_transaction f =
+    let id = Id.to_hex (Id.create ()) in
+    with_tags [ "trace.id", id ] (fun () -> f ())
+  ;;
+
+  let () =
+    (* Setup log transform at application startup. We also set the transform the global
+       logger so tag propagation works within the global logger as well. *)
+    set_transform log_transform;
+    Log.Global.set_transform log_transform
+  ;;
+end
 
 module Output = struct
   let json writer =
@@ -121,7 +130,7 @@ module Output = struct
             :: ("log.level", log_level_to_string (Log.Message.level message))
             :: tags
           in
-          Writer.write_line writer (Yojson.Basic.to_string (`Assoc message)));
+          Writer.write_line writer (Jsonaf.to_string (`Object message)));
         Deferred.unit)
   ;;
 end
@@ -130,28 +139,10 @@ let stdout = Lazy.force Writer.stdout
 
 let another_function () =
   Logger.info "Hello from another function";
-  within_trace ~f:(fun () ->
+  Logger.with_transaction (fun () ->
     Logger.error "This is an error";
     Logger.info "foobar";
-    within_trace ~f:(fun () ->
+    Logger.with_transaction (fun () ->
       Logger.debug "baz";
       Deferred.unit))
-;;
-
-let%expect_test "Test json logging" =
-  Logger.set_output [ Output.json stdout ];
-  Logger.set_level `Debug;
-  let%map () =
-    within_trace ~f:(fun () ->
-      Logger.info "Hello World";
-      Logger.debug "this is a log";
-      another_function ())
-  in
-  [%expect {|
-    {"@timestamp":"2022-09-02 14:33:39.478751Z","message":"Hello World","log.level":"Info","trace.id":"be98422c6eec6490a26d766797a4c7cd"}
-    {"@timestamp":"2022-09-02 14:33:39.478752Z","message":"this is a log","log.level":"Debug","trace.id":"be98422c6eec6490a26d766797a4c7cd"}
-    {"@timestamp":"2022-09-02 14:33:39.478752Z","message":"Hello from another function","log.level":"Info","trace.id":"be98422c6eec6490a26d766797a4c7cd"}
-    {"@timestamp":"2022-09-02 14:33:39.478753Z","message":"This is an error","log.level":"Error","trace.id":"8687af630bd7d57800d0fa24606717d2"}
-    {"@timestamp":"2022-09-02 14:33:39.478754Z","message":"foobar","log.level":"Info","trace.id":"8687af630bd7d57800d0fa24606717d2"}
-    {"@timestamp":"2022-09-02 14:33:39.478754Z","message":"baz","log.level":"Debug","trace.id":"d8efdf0873006fce973345ef71a9d99d"} |}]
 ;;

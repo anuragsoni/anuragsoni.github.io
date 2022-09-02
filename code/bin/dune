@@ -1,0 +1,5 @@
+(executables
+ (names log_example)
+ (libraries core async code_examples core_unix.command_unix)
+ (preprocess
+  (pps ppx_jane)))

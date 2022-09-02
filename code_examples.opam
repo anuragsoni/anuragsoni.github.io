@@ -4,7 +4,7 @@ depends: [
   "dune" {>= "3.0"}
   "core_unix" {>= "0.15.0"}
   "async" {>= "0.15.0"}
-  "yojson"
+  "jsonaf"
   "hex_encode"
   "odoc" {with-doc}
 ]
