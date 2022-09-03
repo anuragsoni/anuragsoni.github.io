@@ -4,9 +4,6 @@ defaultContentLanguage = "en"
 theme = "PaperMod"
 enableGitInfo = true
 paginate = 5
-pygmentsCodefences = true
-pygmentsCodefencesGuessSyntax = true
-pygmentsStyle = "colorful"
 
 enableEmoji = true
 
@@ -98,6 +95,15 @@ weight = 5
 
 [markup.goldmark.renderer]
 unsafe = true
+
+[markup]
+    [markup.highlight]
+    noClasses = true
+    tabWidth = 2
+    lineNumbersInTable = true
+    codeFences = true
+    guessSyntax = true
+    style = "colorful"
 
 [params.assets]
 disableHLJS = true
