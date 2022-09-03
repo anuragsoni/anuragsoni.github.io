@@ -6,7 +6,7 @@ enableGitInfo = true
 paginate = 5
 pygmentsCodefences = true
 pygmentsCodefencesGuessSyntax = true
-pygmentsStyle = "monokai"
+pygmentsStyle = "colorful"
 
 enableEmoji = true
 
@@ -101,13 +101,6 @@ unsafe = true
 
 [params.assets]
 disableHLJS = true
-
-# [markup.highlight]
-# codeFences = true
-# guessSyntax = true
-# lineNos = true
-# noClasses = true
-
 
 [params.editPost]
 URL = "https://github.com/anuragsoni/anuragsoni.github.io/tree/main/content/"

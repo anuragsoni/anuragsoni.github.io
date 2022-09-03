@@ -1,0 +1,7 @@
+:root {
+    --hljs-bg: var(--entry);
+}
+
+:root .post-content pre code {
+    color: var(--primary);
+}
