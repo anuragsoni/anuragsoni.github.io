@@ -1,16 +1,14 @@
 baseURL = "https://anuragsoni.github.io"
 languageCode = "en"
 defaultContentLanguage = "en"
-title = "Anurag Soni"
 theme = "PaperMod"
 enableGitInfo = true
 paginate = 5
+pygmentsCodefences = true
+pygmentsCodefencesGuessSyntax = true
+pygmentsStyle = "monokai"
 
 enableEmoji = true
-pygmentsstyle = "trac"
-pygmentscodefences = true
-pygmentscodefencesguesssyntax = true
-pygmentsUseClasses = true
 
 [taxonomies]
 tag = "tags"
@@ -18,7 +16,7 @@ tag = "tags"
 [params]
 mode = "light"
 author = "Anurag Soni"
-defaultTheme = "auto"
+defaultTheme = "light"
 ShowReadingTime = true
 ShowPostNavLinks = true
 ShowBreadCrumbs = true
@@ -27,11 +25,32 @@ ShowRssButtonInSectionTermList = true
 ShowToc = true
 
 [outputs]
-home = [ "HTML", "RSS", "JSON" ]
+home = [ "JSON" ]
 
 [params.homeInfoParams]
 Title = "Anurag Soni"
 Content = """
+I am a Software Engineer living in [Washington, D.C. Metro Area](https://en.wikipedia.org/wiki/Washington_metropolitan_area).
+<br/>
+<br/>
+I work at [Elastic](https://www.elastic.co/), building data-intensive applications, data pipelines, and high-performance web services.
+<br/>
+<br/>
+I'm interested in network protocols and programming languages. For the past couple of years [OCaml](https://ocaml.org/) has been my primary programming language both professionally and for personal projects, but I'm also interested in [Rust](https://www.rust-lang.org/) for its unique properties combining safety, speed and an expressive type system, and [Elixir](https://elixir-lang.org/) for making the wonderful [Erlang VM](https://www.erlang.org/) approachable, and offering a unique take on building robust highly concurrent systems.
+<br/>
+<br/>
+Projects I maintain:
+<br/>
+
+1. [Routes](https://github.com/anuragsoni/routes/), typed bi-direction routes for OCaml web applications
+2. [Http_async](https://github.com/anuragsoni/http_async), high performance asynchronous HTTP/1.1 server for OCaml
+<br/>
+
+
+Previous projects:
+<br/>
+
+1. [Pgx](https://github.com/arenadotio/pgx), pure-OCaml PostgreSQL client
 """
 
 [[params.socialIcons]]
@@ -50,8 +69,6 @@ url = "index.xml"
 name = "email"
 url = "mailto:soni@fastmail.com"
 
-[params.assets]
-disableHLJS = true
 
 [[menu.main]]
 name = "Home"
@@ -59,30 +76,36 @@ url = "/"
 weight = 1
 
 [[menu.main]]
-name = "About"
-url = "/about"
-weight = 2
-
-[[menu.main]]
 name = "Blog"
 url = "/post"
-weight = 3
+weight = 2
 
 [[menu.main]]
 name = "Tags"
 url = "/tags"
-weight = 4
+weight = 3
 
 [[menu.main]]
 name = "Search"
 url = "/search"
+weight = 4
+
+[[menu.main]]
+name = "Rss"
+url = "/index.xml"
 weight = 5
 
 [markup.goldmark.renderer]
 unsafe = true
 
-[markup.highlight]
-noClasses = false
+[params.assets]
+disableHLJS = true
+
+# [markup.highlight]
+# codeFences = true
+# guessSyntax = true
+# lineNos = true
+# noClasses = true
 
 
 [params.editPost]
