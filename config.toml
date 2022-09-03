@@ -17,6 +17,7 @@ tag = "tags"
 mode = "light"
 author = "Anurag Soni"
 defaultTheme = "light"
+disableThemeToggle = true
 ShowReadingTime = true
 ShowPostNavLinks = true
 ShowBreadCrumbs = true
@@ -25,7 +26,7 @@ ShowRssButtonInSectionTermList = true
 ShowToc = true
 
 [outputs]
-home = [ "JSON" ]
+home = [ "HTML", "JSON", "RSS" ]
 
 [params.homeInfoParams]
 Title = "Anurag Soni"
