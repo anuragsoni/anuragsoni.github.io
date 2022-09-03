@@ -1,0 +1,91 @@
+baseURL = "https://anuragsoni.github.io"
+languageCode = "en"
+defaultContentLanguage = "en"
+title = "Anurag Soni"
+theme = "PaperMod"
+enableGitInfo = true
+paginate = 5
+
+enableEmoji = true
+pygmentsstyle = "trac"
+pygmentscodefences = true
+pygmentscodefencesguesssyntax = true
+pygmentsUseClasses = true
+
+[taxonomies]
+tag = "tags"
+
+[params]
+mode = "light"
+author = "Anurag Soni"
+defaultTheme = "auto"
+ShowReadingTime = true
+ShowPostNavLinks = true
+ShowBreadCrumbs = true
+ShowCodeCopyButtons = true
+ShowRssButtonInSectionTermList = true
+ShowToc = true
+
+[outputs]
+home = [ "HTML", "RSS", "JSON" ]
+
+[params.homeInfoParams]
+Title = "Anurag Soni"
+Content = """
+"""
+
+[[params.socialIcons]]
+name = "github"
+url = "https://github.com/anuragsoni"
+
+[[params.socialIcons]]
+name = "twitter"
+url = "https://twitter.com/SoniAnurag13"
+
+[[params.socialIcons]]
+name = "Rss"
+url = "index.xml"
+
+[[params.socialIcons]]
+name = "email"
+url = "mailto:soni@fastmail.com"
+
+[params.assets]
+disableHLJS = true
+
+[[menu.main]]
+name = "Home"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "About"
+url = "/about"
+weight = 2
+
+[[menu.main]]
+name = "Blog"
+url = "/post"
+weight = 3
+
+[[menu.main]]
+name = "Tags"
+url = "/tags"
+weight = 4
+
+[[menu.main]]
+name = "Search"
+url = "/search"
+weight = 5
+
+[markup.goldmark.renderer]
+unsafe = true
+
+[markup.highlight]
+noClasses = false
+
+
+[params.editPost]
+URL = "https://github.com/anuragsoni/anuragsoni.github.io/tree/main/content/"
+Text = "Suggest Changes"
+appendFilePath = true
