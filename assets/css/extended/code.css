@@ -4,4 +4,8 @@
 
 :root .post-content pre code {
     color: var(--primary);
+    text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
 }
