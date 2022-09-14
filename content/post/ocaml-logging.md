@@ -1,18 +1,14 @@
----
-title: "Better logging for OCaml + Async"
-date: 2022-09-02T08:56:28-04:00
-toc: true
-tags: [OCaml, logging]
----
++++
+title = "Better logging for OCaml + Async"
+date = 2022-09-02
++++
 
 ## Why?
-Effectively running systems in production requires application level support for providing better visibility into what's happening at runtime. Instrumenting applications to provide structured, context aware traces/events is becoming easier thanks to efforts like [OpenTelemetry](https://opentelemetry.io/docs/) [^1], which is a vendor neutral framework for instrumentation and trace collection. 
+Effectively running systems in production requires application level support for providing better visibility into what's happening at runtime. Instrumenting applications to provide structured, context aware traces/events is becoming easier thanks to efforts like [OpenTelemetry](https://opentelemetry.io/docs/), which is a vendor neutral framework for instrumentation and trace collection.
 
 Using auto-instrumentation, either via OpenTelemetry SDKs for the language of your choice, or an observability vendor specific library has a lot of benefits. These libraries typically come with out-of-the-box support for instrumenting a wide set of libraries and propagating useful events to a collection agent (Elastic, Honeycomb, and more). Structured events also have the benefit of allowing the addition of interesting details like unique ids, execution time, etc about an event in question. Unlike logs which are discrete events, traces span over a time interval. They can be started at the beginning of an interesting event, and allow incrementally adding more context to it over the lifecycle of the trace.
 
 A future post will talk more about leveraging tracing, and the benefits of using that model over manually logging information within applications, but there is still quite a bit we can do to improve logging and make them more useful for use in production systems.
-
-[^1]: OCaml library for OpenTelemetry support https://github.com/imandra-ai/ocaml-opentelemetry
 
 ## Problems with the default Async logger
 
@@ -34,7 +30,7 @@ This produces output that looks similar to:
 2022-09-02 11:29:14.504046-04:00 Debug Send confirmation email -- [user: 12345]
 ```
 
-While easy to use the default logger does have some limitations. The log output is easy to read for humans, but it requires post-processing to transform it into a format that's easier to parse. [^2] 
+While easy to use the default logger does have some limitations. The log output is easy to read for humans, but it requires post-processing to transform it into a format that's easier to parse. Async does support s-expressions as a log output which are easy to parse, but outside of the OCaml ecosystem s-expressions aren't common, and most centralized log management systems don't support s-expressions.
 
 Log correlation is another challenge. In synchronous blocking systems transactions are served sequentially and as a result, it's easy to spot that any log event occurring after a transaction starts and before a transaction ends is related to the specific transaction. However, in libraries like [Async](https://opensource.janestreet.com/async/) threading is non-preemptive and a single system thread can execute any number of user-mode "threads" asynchronously. In such systems, a transaction might not run to completion and instead yield control to the scheduler so a different transaction can run. This results in logs from concurrent transactions being printed interleaved.
 
@@ -79,9 +75,6 @@ We might see output like this:
 ```
 
 The default output has details from each run of the task, but it's hard to tell whether the log lines about starting and finishing the stages belong to transactions A, B, or C.
-
-
-[^2]: Async supports s-expressions as a log output, but outside of the OCaml ecosystem s-expressions aren't common, and most centralized log management systems don't support s-expressions.
 
 ## Better Logging configuration
 

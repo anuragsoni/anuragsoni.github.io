@@ -1,0 +1,114 @@
+@font-face {
+    font-family: charter;
+    font-style: normal;
+    font-weight: normal;
+    font-stretch: normal;
+    src: url('fonts/charter_regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: charter;
+    font-style: italic;
+    font-weight: normal;
+    font-stretch: normal;
+    src: url('fonts/charter_italic.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: charter;
+    font-style: normal;
+    font-weight: bold;
+    font-stretch: normal;
+    src: url('fonts/charter_bold.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: charter;
+    font-style: italic;
+    font-weight: bold;
+    font-stretch: normal;
+    src: url('fonts/charter_bold_italic.woff2') format('woff2');
+}
+
+html {
+    font-size: 18px;
+}
+
+body {
+    max-width: 70em;
+    margin: 2em auto;
+    padding: 0 1em;
+    font-size: 1em;
+    font-family: 'charter', serif;
+    line-height: 1.4em;
+    color: #000000
+}
+
+
+code,
+pre {
+    font-size: medium;
+    font-family:
+        ui-monospace,
+        Menlo, Monaco,
+        "Cascadia Mono", "Consolas", "Segoe UI Mono",
+        "Roboto Mono",
+        "Oxygen Mono",
+        "Ubuntu Monospace",
+        "Source Code Pro",
+        "Fira Mono",
+        "Droid Sans Mono",
+        "Courier New", monospace;
+}
+
+pre {
+    padding: 1em;
+    overflow-x: auto;
+    background-color: #FAF9F6 !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    line-height: 1.2em;
+    font-family: sans-serif;
+}
+
+a:link {
+    font-family: sans-serif;
+}
+
+.sans {
+    font-family: sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        color: #c9d1d9;
+        background: #0d1117
+    }
+
+    a:link {
+        color: #58a6ff
+    }
+
+    a:visited {
+        color: #8e96f0
+    }
+}
+
+.menu header {
+    display: none;
+}
+
+.menu ul {
+    padding: 0;
+}
+
+.menu li {
+    display: inline;
+    padding: 0 0.2em;
+}
