@@ -1,114 +1,23 @@
-baseURL = "https://anuragsoni.github.io"
-languageCode = "en"
-defaultContentLanguage = "en"
-theme = "PaperMod"
-enableGitInfo = true
-paginate = 5
+# The URL the site will be built for
+base_url = "https://anuragsoni.github.io"
 
-enableEmoji = true
+# Whether to automatically compile all Sass files in the sass directory
+compile_sass = false
 
-[taxonomies]
-tag = "tags"
+generate_feed = true
 
-[params]
-mode = "light"
-author = "Anurag Soni"
-defaultTheme = "light"
-disableThemeToggle = true
-ShowReadingTime = true
-ShowPostNavLinks = true
-ShowBreadCrumbs = true
-ShowCodeCopyButtons = true
-ShowRssButtonInSectionTermList = true
-ShowToc = true
+# Whether to build a search index to be used later on by a JavaScript library
+build_search_index = true
 
-[outputs]
-home = [ "HTML", "JSON", "RSS" ]
+[markdown]
+# Whether to do syntax highlighting
+# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
+highlight_code = true
+highlight_theme = "css"
+highlight_themes_css = [
+    { theme = "visual-studio-dark", filename = "syntax-theme-dark.css" },
+    { theme = "inspired-github", filename = "syntax-theme-light.css" },
+]
 
-[params.homeInfoParams]
-Title = "Anurag Soni"
-Content = """
-I am a Software Engineer living in [Washington, D.C. Metro Area](https://en.wikipedia.org/wiki/Washington_metropolitan_area).
-<br/>
-<br/>
-I work at [Elastic](https://www.elastic.co/), building data-intensive applications, data pipelines, and high-performance web services.
-<br/>
-<br/>
-I'm interested in network protocols and programming languages. For the past couple of years [OCaml](https://ocaml.org/) has been my primary programming language both professionally and for personal projects, but I'm also interested in [Rust](https://www.rust-lang.org/) for its unique properties combining safety, speed and an expressive type system, and [Elixir](https://elixir-lang.org/) for making the wonderful [Erlang VM](https://www.erlang.org/) approachable, and offering a unique take on building robust highly concurrent systems.
-<br/>
-<br/>
-Projects I maintain:
-<br/>
-
-1. [Routes](https://github.com/anuragsoni/routes/), typed bi-direction routes for OCaml web applications
-2. [Http_async](https://github.com/anuragsoni/http_async), high performance asynchronous HTTP/1.1 server for OCaml
-<br/>
-
-
-Previous projects:
-<br/>
-
-1. [Pgx](https://github.com/arenadotio/pgx), pure-OCaml PostgreSQL client
-"""
-
-[[params.socialIcons]]
-name = "github"
-url = "https://github.com/anuragsoni"
-
-[[params.socialIcons]]
-name = "twitter"
-url = "https://twitter.com/SoniAnurag13"
-
-[[params.socialIcons]]
-name = "Rss"
-url = "index.xml"
-
-[[params.socialIcons]]
-name = "email"
-url = "mailto:soni@fastmail.com"
-
-
-[[menu.main]]
-name = "Home"
-url = "/"
-weight = 1
-
-[[menu.main]]
-name = "Blog"
-url = "/post"
-weight = 2
-
-[[menu.main]]
-name = "Tags"
-url = "/tags"
-weight = 3
-
-[[menu.main]]
-name = "Search"
-url = "/search"
-weight = 4
-
-[[menu.main]]
-name = "Rss"
-url = "/index.xml"
-weight = 5
-
-[markup.goldmark.renderer]
-unsafe = true
-
-[markup]
-    [markup.highlight]
-    noClasses = true
-    tabWidth = 2
-    lineNumbersInTable = true
-    codeFences = true
-    guessSyntax = true
-    style = "colorful"
-
-[params.assets]
-disableHLJS = true
-
-[params.editPost]
-URL = "https://github.com/anuragsoni/anuragsoni.github.io/tree/main/content/"
-Text = "Suggest Changes"
-appendFilePath = true
+[extra]
+# Put all your custom variables here
