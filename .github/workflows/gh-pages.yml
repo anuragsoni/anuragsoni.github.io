@@ -16,7 +16,6 @@ jobs:
       - name: Build
         uses: shalzz/zola-deploy-action@v0.16.1
         env:
-          BUILD_DIR: docs
           BUILD_ONLY: true
           BUILD_FLAGS: --drafts
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -29,6 +28,5 @@ jobs:
       - name: Build and deploy
         uses: shalzz/zola-deploy-action@v0.16.1
         env:
-          BUILD_DIR: docs
           PAGES_BRANCH: gh-pages
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
