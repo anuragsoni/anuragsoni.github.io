@@ -3,8 +3,8 @@
  */
 
 .z-code {
- color: #323232;
- background-color: #FAFAFA;
+ color: inherit;
+ background-color: #ffffff;
 }
 
 .z-comment {
