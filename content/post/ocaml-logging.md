@@ -5,6 +5,7 @@ date = 2022-09-02
 
 ## Why?
 Effectively running systems in production requires application level support for providing better visibility into what's happening at runtime. Instrumenting applications to provide structured, context aware traces/events is becoming easier thanks to efforts like [OpenTelemetry](https://opentelemetry.io/docs/), which is a vendor neutral framework for instrumentation and trace collection.
+<!-- more -->
 
 Using auto-instrumentation, either via OpenTelemetry SDKs for the language of your choice, or an observability vendor specific library has a lot of benefits. These libraries typically come with out-of-the-box support for instrumenting a wide set of libraries and propagating useful events to a collection agent (Elastic, Honeycomb, and more). Structured events also have the benefit of allowing the addition of interesting details like unique ids, execution time, etc about an event in question. Unlike logs which are discrete events, traces span over a time interval. They can be started at the beginning of an interesting event, and allow incrementally adding more context to it over the lifecycle of the trace.
 

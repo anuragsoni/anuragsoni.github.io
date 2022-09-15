@@ -6,6 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="base" content="{{ config.base_url | safe}}" />
+    {% if page.summary %}<meta name="description" content="{{ page.summary | markdown(inline=true) }}">{% endif %}
+    {%if page %}<meta property="og:title" content="{{ page.title }}">{% endif %}
+    {%if page %}<meta property="og:url" content="{{ get_url(path=page.path) }}">{% endif %}
+    {% if page.summary %}<meta property="og:description" content="{{ page.summary | markdown(inline=true) }}">{% endif %}
     <link rel="stylesheet" href="{{ get_url(path="style.css") }}" />
     <title>{% block title %}Anurag's Blog{% endblock %}</title>
     {% block rss %}
