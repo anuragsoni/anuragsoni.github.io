@@ -335,6 +335,6 @@ We added the identifier to the log message to make it easy to confirm that each 
 
 Voila! we now have a way to generate machine-readable log messages and a lightweight method for automatic context propagation for independent async transactions.
 
-This is all I have for now! If you like this post or have feedback do let me know, either via [email](mailto:github@sonianurag.com) or on [github](https://github.com/anuragsoni/anuragsoni.github.io/discussions).
+This is all I have for now! If you like this post or have feedback do let me know, either via [email](mailto:anurag@sonianurag.com) or on [github](https://github.com/anuragsoni/anuragsoni.github.io/discussions).
 
 All the code in this post can be found [here](https://github.com/anuragsoni/anuragsoni.github.io/blob/77227dedd4cd8617938b01b054496b75ca6b92e4/code/bin/log_example.ml). If you notice any issues let me know via [github](https://github.com/anuragsoni/anuragsoni.github.io/issues).
