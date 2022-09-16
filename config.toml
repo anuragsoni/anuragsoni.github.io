@@ -1,6 +1,10 @@
 # The URL the site will be built for
 base_url = "https://anuragsoni.github.io"
 
+title = "Anurag Soni"
+description = "Anurag Soni's personal blog"
+lang = "en"
+
 # Whether to automatically compile all Sass files in the sass directory
 compile_sass = false
 
@@ -21,3 +25,4 @@ highlight_themes_css = [
 
 [extra]
 # Put all your custom variables here
+author = "Anurag Soni"
