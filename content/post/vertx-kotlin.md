@@ -1,6 +1,9 @@
 +++
 title = "Using Kotlin Coroutines with Vert.x"
 date = 2022-09-15
+
+[taxonomies]
+tags = ["Kotlin"]
 +++
 
 [Vert.x](https://vertx.io) is a toolkit for writing asynchronous and reactive applications on the JVM. The Vert.x ecosystem has high-quality libraries providing support for web services, database drivers, authentication, and more.

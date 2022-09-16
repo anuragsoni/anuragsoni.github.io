@@ -1,6 +1,9 @@
 +++
 title = "Better logging for OCaml + Async"
 date = 2022-09-02
+
+[taxonomies]
+tags = ["OCaml", "logging"]
 +++
 
 ## Why?
