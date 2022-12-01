@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="base" content="https://anuragsoni.github.io" />
+    <meta name="author" content="Anurag Soni" />
+    
+    <meta property="og:title" content="Using Kotlin Coroutines with Vert.x">
+    <meta property="og:url" content="https://anuragsoni.github.io/post/vertx-kotlin">
+    
+    <link rel="stylesheet" href="https://anuragsoni.github.io/style.css" />
+    <link rel="me" href="https://discuss.systems/@soni" />
+    <title>
+    Using Kotlin Coroutines with Vert.x
+</title>
+</head>
+
+<body>
+    <nav class="menu">
+        <header>Menu:</header>
+        <ul>
+            <li><a class="sans-serif" href="/">Home</a></li>
+            <li><a class="sans-serif" href="/about">About</a></li>
+            <li><a class="sans-serif" href="/tags">Tags</a></li>
+        </ul>
+    </nav>    
+    <div class="container">
+        
+<h1 class="title">
+    Using Kotlin Coroutines with Vert.x
+</h1>
+<p class="subtitle"><strong class="sans-serif">September 15, 2022</strong></p>
+
+<p><a href="https://vertx.io">Vert.x</a> is a toolkit for writing asynchronous and reactive applications on the JVM. The Vert.x ecosystem has high-quality libraries providing support for web services, database drivers, authentication, and more.</p>
+<p>I've recently started to use Vert.x, but I chose to use it with Kotlin instead of Java. I'm still in my first week of using Kotlin, but I'm finding the language very pleasant so far. This post will talk about Vert.x Web which is a library that builds on top of the core Vert.x library to provide everything one would need to write an HTTP/HTTP2 service. It is similar in spirit to Sinatra from the Ruby world, or Flask from Python.</p>
+<p>Vert.x is a fully concurrent/asynchronous toolkit and it offers a few different units of abstractions to help make this approachable. When using the library with Java, callbacks, promises and futures are available and should feel very familiar to anyone used to Javascript, Async/Lwt from OCaml, etc. While promises and futures work well, I am using Vert.x with Kotlin so I wanted to use coroutines as the unit of concurrency, and benefit from being able to write my async operations in direct-style. This is where I ran into some gaps in the Vert.x HTTP library.</p>
+<p>Vert.x's Kotlin support is in the form of a library that implements some functions that allow one to <code>await</code> a Vert.x Future from within a kotlin coroutine. Beyond this, Kotlin users access the same Vert.x APIs that are used from Java that is designed around promises and futures. When writing client code, it was easy to use the <code>await</code> implementations from the vertx-kotlin support library from within a kotlin coroutine, but it took me a while to figure out a satisfactory solution that allows defining HTTP handlers that are kotlin coroutines, thus allowing the handlers to consume other Kotlin APIs that work with coroutines instead of vert.x promises and futures.</p>
+<p>As an example, creating a router using the default API from Vert.x Web looks like this:</p>
+<pre data-lang="kotlin" class="language-kotlin z-code"><code class="language-kotlin" data-lang="kotlin"><span class="z-source z-Kotlin"><span class="z-keyword z-other z-kotlin">val</span> <span class="z-entity z-name z-variable z-kotlin">router</span> <span class="z-keyword z-operator z-assignment z-kotlin">=</span> Router<span class="z-keyword z-operator z-dot z-kotlin">.</span>router(vertx)<span class="z-punctuation z-terminator z-kotlin">;</span>
+
+router<span class="z-keyword z-operator z-dot z-kotlin">.</span>route(<span class="z-string z-quoted z-double z-kotlin"><span class="z-punctuation z-definition z-string z-begin z-kotlin">&quot;</span>/hello<span class="z-punctuation z-definition z-string z-end z-kotlin">&quot;</span></span>)<span class="z-keyword z-operator z-dot z-kotlin">.</span>handler { requestContext <span class="z-keyword z-operator z-declaration z-kotlin">-&gt;</span>
+    requestContext<span class="z-keyword z-operator z-dot z-kotlin">.</span>response()<span class="z-keyword z-operator z-dot z-kotlin">.</span>send(<span class="z-string z-quoted z-double z-kotlin"><span class="z-punctuation z-definition z-string z-begin z-kotlin">&quot;</span>Hello World<span class="z-punctuation z-definition z-string z-end z-kotlin">&quot;</span></span>)
+}
+</span></code></pre>
+<p>For simple handlers, and if the APIs that are needed within the handler use promises/callbacks, then this works just fine. While promises work fine, the callback style APIs can be a little difficult to read, and one big perk of using Kotlin is its support for coroutines that help write direct-style asynchronous code. It is fairly common to see coroutines used in Kotlin libraries, so it was important for me to find a way to write HTTP handlers that can work with coroutines seamlessly.</p>
+<p>We will simulate some async work using a simple suspendable function that sleeps for a duration before responding.</p>
+<pre data-lang="kotlin" class="language-kotlin z-code"><code class="language-kotlin" data-lang="kotlin"><span class="z-source z-Kotlin"><span class="z-storage z-modifier z-kotlin">suspend</span> <span class="z-keyword z-other z-kotlin">fun</span> <span class="z-entity z-name z-function z-kotlin">coroutineDemo</span>()<span class="z-keyword z-operator z-declaration z-kotlin">:</span> <span class="z-storage z-type z-buildin z-kotlin">String</span> {
+    delay(<span class="z-constant z-numeric z-kotlin">3000</span>)
+    <span class="z-keyword z-control z-kotlin">return</span> <span class="z-string z-quoted z-double z-kotlin"><span class="z-punctuation z-definition z-string z-begin z-kotlin">&quot;</span>Hello World<span class="z-punctuation z-definition z-string z-end z-kotlin">&quot;</span></span>
+}
+</span></code></pre>
+<p>Trying to call <code>coroutineDemo()</code> within the vert.x route handler will result in an error saying that <code>Suspension functions can be called only within the coroutine body</code>. What we need is a way to define a new kind of route handler that allows users to provide a suspendable function as a handler and transforms it into a callback-based handler that Vert.x Web understands. Lucky for us Kotlin comes with a pretty neat way to extend third-party libraries, called <a href="https://kotlinlang.org/docs/extensions.html">Extensions</a>. With extensions, we can extend the Vert.x Route interface to add a new handler type that works with coroutines.</p>
+<pre data-lang="kotlin" class="language-kotlin z-code"><code class="language-kotlin" data-lang="kotlin"><span class="z-source z-Kotlin"><span class="z-keyword z-other z-kotlin">fun</span> Route.<span class="z-entity z-name z-function z-kotlin">coroutineHandler</span>(
+    <span class="z-variable z-parameter z-function z-kotlin">coroutineContext</span><span class="z-keyword z-operator z-declaration z-kotlin">:</span> CoroutineContext,
+    <span class="z-variable z-parameter z-function z-kotlin">userHandler</span><span class="z-keyword z-operator z-declaration z-kotlin">:</span> suspend (RoutingContext) <span class="z-keyword z-operator z-declaration z-kotlin">-&gt;</span> <span class="z-storage z-type z-buildin z-kotlin">Unit</span>
+) <span class="z-keyword z-operator z-assignment z-kotlin">=</span> handler { routingContext <span class="z-keyword z-operator z-declaration z-kotlin">-&gt;</span>
+    CoroutineScope(coroutineContext)<span class="z-keyword z-operator z-dot z-kotlin">.</span>launch {
+        <span class="z-keyword z-control z-catch-exception z-kotlin">try</span> {
+            userHandler(routingContext)
+        } <span class="z-keyword z-control z-catch-exception z-kotlin">catch</span> (exception<span class="z-keyword z-operator z-declaration z-kotlin">:</span> Exception) {
+            routingContext<span class="z-keyword z-operator z-dot z-kotlin">.</span>fail(exception)
+        }
+    }
+}
+</span></code></pre>
+<p>This is a short but fairly dense function. Starting at the top we can see:</p>
+<ul>
+<li>A <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.coroutines/-coroutine-context/">CoroutineContext</a> since every kotlin coroutine executes within a context, and we'd like to allow the user to forward the context set up by the vertx-kotlin library.</li>
+<li>A <code>userHandler</code> that is similar to the default handler type <code>(RoutingContext -&gt; Unit)</code>, but is a suspendable function instead.</li>
+<li>We create a new Vert.x route handler, set up a new <a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/">CoroutineScope</a> that is used to launch the suspendable handler.</li>
+<li>We catch any unhandled exceptions and forward them to the vert.x router context so it can mark the request as a failure, call the vert.x error handler, and send an appropriate error response to the user.</li>
+</ul>
+<p>With this extension function in place, we can now add suspendable handlers to the vert.x router:</p>
+<pre data-lang="kotlin" class="language-kotlin z-code"><code class="language-kotlin" data-lang="kotlin"><span class="z-source z-Kotlin"><span class="z-keyword z-other z-kotlin">val</span> <span class="z-entity z-name z-variable z-kotlin">router</span> <span class="z-keyword z-operator z-assignment z-kotlin">=</span> Router<span class="z-keyword z-operator z-dot z-kotlin">.</span>router(vertx)<span class="z-punctuation z-terminator z-kotlin">;</span>
+
+router<span class="z-keyword z-operator z-dot z-kotlin">.</span>route(<span class="z-string z-quoted z-double z-kotlin"><span class="z-punctuation z-definition z-string z-begin z-kotlin">&quot;</span>/hello<span class="z-punctuation z-definition z-string z-end z-kotlin">&quot;</span></span>)<span class="z-keyword z-operator z-dot z-kotlin">.</span>coroutineHandler(coroutineContext) { routingContext <span class="z-keyword z-operator z-declaration z-kotlin">-&gt;</span>
+    <span class="z-keyword z-other z-kotlin">val</span> <span class="z-entity z-name z-variable z-kotlin">payload</span> <span class="z-keyword z-operator z-assignment z-kotlin">=</span> coroutineDemo()
+    routingContext<span class="z-keyword z-operator z-dot z-kotlin">.</span>response()<span class="z-keyword z-operator z-dot z-kotlin">.</span>send(payload)
+}
+</span></code></pre>
+<p>The coroutineContext referenced in this snippet is the context available in a class that extends <a href="https://vertx.io/docs/vertx-lang-kotlin-coroutines/kotlin/#_extending_coroutineverticle">CoroutineVerticle</a>.</p>
+<p>That is all for this post! This took a few tries for me to figure out as a new Kotlin user, and hopefully, some of you will find this useful! If you like this post or have feedback do let me know, either via <a href="mailto:github@sonianurag.com">email</a> or on <a href="https://github.com/anuragsoni/anuragsoni.github.io/discussions">github</a>.</p>
+<p>All the code in this post can be found <a href="https://gist.github.com/anuragsoni/3680b9c30ba07ff16896490310c4fa7a">here</a>.</p>
+
+
+    </div>
+</body>
+</html>

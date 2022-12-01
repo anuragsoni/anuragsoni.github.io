@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://anuragsoni.github.io/</loc>
+    </url>
+    <url>
+        <loc>https://anuragsoni.github.io/about/</loc>
+    </url>
+    <url>
+        <loc>https://anuragsoni.github.io/post/</loc>
+    </url>
+    <url>
+        <loc>https://anuragsoni.github.io/post/ocaml-logging/</loc>
+        <lastmod>2022-09-02</lastmod>
+    </url>
+    <url>
+        <loc>https://anuragsoni.github.io/post/vertx-kotlin/</loc>
+        <lastmod>2022-09-15</lastmod>
+    </url>
+    <url>
+        <loc>https://anuragsoni.github.io/tags/</loc>
+    </url>
+    <url>
+        <loc>https://anuragsoni.github.io/tags/kotlin/</loc>
+    </url>
+    <url>
+        <loc>https://anuragsoni.github.io/tags/logging/</loc>
+    </url>
+    <url>
+        <loc>https://anuragsoni.github.io/tags/ocaml/</loc>
+    </url>
+</urlset>
